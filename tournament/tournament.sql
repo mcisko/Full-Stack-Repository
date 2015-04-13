@@ -28,10 +28,10 @@ Create TABLE tournament(Id serial PRIMARY KEY ,
 -- Creating tabe match
 Create TABLE match(id SERIAl PRIMARY KEY ,
                   tournament_id INTEGER REFERENCES tournament(Id),
-                  playerID1 Integer references player(Id),
-                  playerID2 INTEGER references player(Id) ,
-                  Winner  INTEGER REFERENCES player(Id),
-                  Loser INTEGER REFERENCES player(Id),
+                  playerID1 Integer references player(Id) on DELETE CASCADE on UPDATE CASCADE ,
+                  playerID2 INTEGER references player(Id) on DELETE CASCADE on UPDATE CASCADE ,
+                  Winner  INTEGER REFERENCES player(Id)on DELETE CASCADE on UPDATE CASCADE,
+                  Loser INTEGER REFERENCES player(Id) on DELETE CASCADE on UPDATE CASCADE,
                   draw BIT,
                   match_date DATE DEFAULT now()
                   );

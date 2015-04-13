@@ -8,14 +8,15 @@ import psycopg2
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    return psycopg2.connect("dbname='tournament' ")
 
 
 def deleteMatches():
     """Remove all the match records from the database."""
     conn = connect()
     cursor =conn.cursor()
-    cursor.execute('DELETE from match;')
+    cursor.execute("DELETE FROM match ;")
+    conn.commit()
     conn.close()
 
 
@@ -23,7 +24,8 @@ def deletePlayers():
     """Remove all the player records from the database."""
     conn =connect()
     cursor =conn.cursor()
-    cursor.execute('DELETE FROM PLAYER;')
+    cursor.execute("DELETE FROM player;")
+    conn.commit()
     conn.close
 
 
@@ -31,9 +33,12 @@ def countPlayers():
     """Returns the number of players currently registered."""
     conn =connect()
     cursor =conn.cursor()
-    Count_number_of_players =cursor.execute('select count(*) from player;')
+    cursor.execute("select count(*) from player;")
+    num = cursor.fetchone()
+    conn.commit()
     conn.close()
-    return Count_number_of_players
+    return num[0]
+
     
     
 
@@ -49,9 +54,10 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    conn = coonect()
+    conn = connect()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO player(name) values ('Mamadou');")
+    cursor.execute("INSERT INTO player(name) values(%s);", (name,))
+    conn.commit()
     conn.close()
     
 
@@ -71,7 +77,7 @@ def playerStandings():
     """
     conn = connect()
     cursor =conn.cursor()
-    cursor.execute("select k.id, k.name, (select count(*) from match as t where t.winner = k.id)as match_won,(select count(*) from match m where k.id = m.playerid1 or k.id=m.playerid2) as Number_matches_played from player as K order by match_won desc;")
+    cursor.execute("select k.id as id, k.name as name, (select count(*) from match as t where t.winner = k.id) as wins,(select count(*) from match m where k.id = m.playerid1 or k.id=m.playerid2) as matches from player as K order by wins desc;")
     results = cursor.fetchall()
     conn.close()
     return results
@@ -87,7 +93,8 @@ def reportMatch(winner, loser):
     """
     conn =connect()
     cursor =conn.cursor()
-    cursor.execute("INSERT INTO match value(winner,loser,winner,loser,FALSE );")
+    cursor.execute("INSERT INTO match(playerid1,playerid2,winner,loser,draw) values (%s,%s,%s,%s,%s);",(winner,loser,winner,loser,False))
+    conn.commit()
     conn.close()
 
  
@@ -109,8 +116,14 @@ def swissPairings():
     """
     conn =connect()
     cursor =conn.cursor()
-    cursor.execute('Select t.id , t.name, k.id,k.name from  player as t,player as k where t.id > k.id;')
+    cursor.execute('Select t.id , t.name from  player t order by (select count(*) from match as k where k.winner = t.id) desc;')
     results =cursor.fetchall()
+    xalass  =()
+    xalass2=()
+    for row in results[0:2]:
+        xalass +=row[0:2]
+    for row in results[2:4]:
+        xalass2 +=row[0:2]
     conn.close()
-    return results
+    return xalass,xalass2
 
