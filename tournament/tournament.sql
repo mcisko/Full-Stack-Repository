@@ -12,7 +12,7 @@ CREATE DATABASE tournament;
 
 -- Connect to the database tournament
 
-
+\c tournament
 
 -- Creating Table Player
 
@@ -32,7 +32,7 @@ Create TABLE match(id SERIAl PRIMARY KEY ,
                   playerID2 INTEGER references player(Id) on DELETE CASCADE on UPDATE CASCADE ,
                   Winner  INTEGER REFERENCES player(Id)on DELETE CASCADE on UPDATE CASCADE,
                   Loser INTEGER REFERENCES player(Id) on DELETE CASCADE on UPDATE CASCADE,
-                  draw BIT,
+                  draw Boolean,
                   match_date DATE DEFAULT now()
                   );
 
