@@ -1,8 +1,7 @@
 
+The purpose of this application is to resolve the a swiss pairing tournament. it creates a databse in postgressql
+that has three tables : player , match and tournament 
 
-1. Objectives of the application :
-
-The purpose of this application is to resolve the a swiss pairing tournament
 
 2 To run the application, 
 	
@@ -12,4 +11,3 @@ The purpose of this application is to resolve the a swiss pairing tournament
 
 3. To test the application, one can run the tournament_test.py 
 
-PS: a:) I have created a tournament table so that we can store many matches b:) The application can also record draws

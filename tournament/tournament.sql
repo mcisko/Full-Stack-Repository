@@ -14,25 +14,31 @@ CREATE DATABASE tournament;
 
 \c tournament
 
--- Creating Table Player
-
-CREATE TABLE player(Id SERIAl PRIMARY KEY,
-                    name TEXT
-
-                    );
 -- Creating Table tournament
-Create TABLE tournament(Id serial PRIMARY KEY , 
+Create TABLE tournament(Id serial PRIMARY KEY ,
                         name TEXT
                         );
 
--- Creating tabe match
+-- Creating Table Player
+-- I have added a foreign key referencing the tournament table.Using that model I can differentiate
+--  between a regular player from a player registered in a tournament
+
+CREATE TABLE player(Id SERIAl PRIMARY KEY,
+                    name TEXT,
+                    tounament_Id INTEGER  REFERENCES tournament(Id)
+
+                    );
+
+-- Creating table match
+-- I have created winner and loser referencing players who have won or lost. The win or loss is valid
+-- only if draw = false; if draw  =true then winner and loser will just indicated the players
+-- competing
+
+
 Create TABLE match(id SERIAl PRIMARY KEY ,
-                  tournament_id INTEGER REFERENCES tournament(Id),
-                  playerID1 Integer references player(Id) on DELETE CASCADE on UPDATE CASCADE ,
-                  playerID2 INTEGER references player(Id) on DELETE CASCADE on UPDATE CASCADE ,
                   Winner  INTEGER REFERENCES player(Id)on DELETE CASCADE on UPDATE CASCADE,
                   Loser INTEGER REFERENCES player(Id) on DELETE CASCADE on UPDATE CASCADE,
-                  draw Boolean,
+                  draw boolean,
                   match_date DATE DEFAULT now()
                   );
 

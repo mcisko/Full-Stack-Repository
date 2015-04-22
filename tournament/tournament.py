@@ -7,26 +7,28 @@ import psycopg2
 
 
 def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname='tournament' ")
 
+    """Connect to the PostgreSQL database.  Returns a database connection."""
+    return psycopg2.connect("dbname='postgres'")
+
+def runACommand(CommandText):
+    """This is a generic function that  helps in executing sql script without repeating the same procedures
+        It helps me implement the DRY  policy """
+    conn =connect()
+    cursor =conn.cursor()
+    cursor.execute(CommandText)
+    conn.commit()
+    conn.close()
 
 def deleteMatches():
     """Remove all the match records from the database."""
-    conn = connect()
-    cursor =conn.cursor()
-    cursor.execute("DELETE FROM match ;")
-    conn.commit()
-    conn.close()
+    runACommand("DELETE FROM match ;")
+
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    conn =connect()
-    cursor =conn.cursor()
-    cursor.execute("DELETE FROM player;")
-    conn.commit()
-    conn.close
+    runACommand("DELETE FROM player;")
 
 
 def countPlayers():
@@ -43,10 +45,10 @@ def countPlayers():
     
 
 
-def registerPlayer(name):
+def registerPlayer(name,tournament_id = None):
             
     
-    """Adds a player to the tournament database.
+    """Adds a player to the tournament database. We can register a player
   
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
@@ -56,7 +58,7 @@ def registerPlayer(name):
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO player(name) values(%s);", (name,))
+    cursor.execute("INSERT INTO player(name,tounament_id) values(%s , %s);", (name,tournament_id))
     conn.commit()
     conn.close()
     
@@ -77,23 +79,25 @@ def playerStandings():
     """
     conn = connect()
     cursor =conn.cursor()
-    cursor.execute("select k.id as id, k.name as name, (select count(*) from match as t where t.winner = k.id) as wins,(select count(*) from match m where k.id = m.playerid1 or k.id=m.playerid2) as matches from player as K order by wins desc;")
+    cursor.execute("select k.id as id, k.name as name, (select count(*) from match as t where t.winner = k.id and draw = false) as wins,(select count(*) from match m where k.id = m.winner or k.id=m.loser) as matches from player as K order by wins desc;")
     results = cursor.fetchall()
     conn.close()
     return results
    
 
-def reportMatch(winner, loser):
+def reportMatch(winner, loser,draw=False):
                    
     """Records the outcome of a single match between two players.
 
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
+      draw : defaulted to false.If draw is equal to true there is no winner or loser
+
     """
     conn =connect()
     cursor =conn.cursor()
-    cursor.execute("INSERT INTO match(playerid1,playerid2,winner,loser,draw) values (%s,%s,%s,%s,%s);",(winner,loser,winner,loser,False))
+    cursor.execute("INSERT INTO match(winner,loser,draw) values (%s,%s,%s);",(winner,loser,draw))
     conn.commit()
     conn.close()
 
@@ -116,14 +120,14 @@ def swissPairings():
     """
     conn =connect()
     cursor =conn.cursor()
-    cursor.execute('Select t.id , t.name from  player t order by (select count(*) from match as k where k.winner = t.id) desc;')
+    cursor.execute('Select t.id , t.name from  player t order by (select count(*) from match as k where k.winner = t.id and draw = False) desc;')
     results =cursor.fetchall()
-    xalass  =()
-    xalass2=()
-    for row in results[0:2]:
-        xalass +=row[0:2]
-    for row in results[2:4]:
-        xalass2 +=row[0:2]
+    """ Break down the results set in odd and even index """
+    even = results[0::2]
+    odd =results[1::2]
     conn.close()
-    return xalass,xalass2
+    final =zip(even,odd)
+    """Put the results in pairs for display"""
+    final_result = final[0][0]+final[0][1],final[1][0]+final[1][1]
+    return final_result
 
